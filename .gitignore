@@ -1,0 +1,3 @@
+
+# Ignorer les dépendances Node.js (si vous utilisez npm/yarn)
+/node_modules/

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Up Gutenberg Binding interface
  * Description:       Ajoute un panneau de configuration pour les Block Bindings à certains blocs Gutenberg.
- * Version:           1.0.0
+ * Version:           1.1
  * Author:            GEHIN Nicolas
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html

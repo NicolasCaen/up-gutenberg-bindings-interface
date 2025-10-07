@@ -20,21 +20,20 @@ const BINDING_SOURCES = [
     { label: 'Lorem Picsum',      value: 'up/lorem-picsum' },
 ];
 
+// Champs affichés pour la configuration "Post Meta".
+// Nous normalisons à une seule clé meta: args.key
 const META_FIELDS = {
     'core/image': [
-        { key: 'url', label: 'Meta URL' },
-        { key: 'alt', label: 'Meta Texte alternatif' },
-        { key: 'title', label: 'Meta Titre' },
+        { key: 'key', label: 'Clé meta (key)' },
     ],
     'core/button': [
-        { key: 'url', label: 'Meta URL' },
-        { key: 'text', label: 'Meta Texte' },
+        { key: 'key', label: 'Clé meta (key)' },
     ],
     'core/paragraph': [
-        { key: 'content', label: 'Meta Contenu' },
+        { key: 'key', label: 'Clé meta (key)' },
     ],
     'core/heading': [
-        { key: 'content', label: 'Meta Contenu' },
+        { key: 'key', label: 'Clé meta (key)' },
     ],
 };
 
@@ -44,6 +43,9 @@ const BLOCK_BINDING_ATTRIBUTES = {
     'core/button':    'text',
     'core/image':     'url',
 };
+
+// Liste des blocs pour lesquels un placeholder natif a du sens (RichText)
+const PLACEHOLDER_SUPPORTED = new Set(['core/paragraph', 'core/heading', 'core/button']);
 
 const withBindingControls = createHigherOrderComponent((BlockEdit) => {
     return (props) => {
@@ -56,6 +58,7 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
         const [bindingSource, setBindingSource] = useState('core/pattern-overrides');
         const [bindingKey, setBindingKey] = useState({});
         const [wordCount, setWordCount] = useState(8);
+        const [loremSelect, setLoremSelect] = useState('');
 
         useEffect(() => {
             if (metadata?.name) setBindingName(metadata.name);
@@ -66,7 +69,11 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
             if (binding?.source) setBindingSource(binding.source);
 
             if (binding?.source === 'core/post-meta') {
-                setBindingKey(binding.args || {});
+                const a = binding.args || {};
+                const normalized = {
+                    key: a.key ?? a.content ?? a.url ?? a.text ?? a.title ?? '',
+                };
+                setBindingKey(normalized);
             }
 
             if (binding?.source === 'up/lorem-ipsum') {
@@ -93,7 +100,8 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
             const args = {};
 
             if (bindingSource === 'core/post-meta') {
-                Object.assign(args, bindingKey);
+                // Toujours produire args.key
+                if (bindingKey?.key) args.key = bindingKey.key;
             }
 
             if (bindingSource === 'up/lorem-ipsum') {
@@ -124,9 +132,22 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
         const isFormValid = () => {
             if (!bindingName) return false;
             if (bindingSource === 'core/post-meta') {
-                return Object.values(bindingKey).some((val) => val && val !== '');
+                return !!(bindingKey && typeof bindingKey.key === 'string' && bindingKey.key.trim() !== '');
             }
             return true;
+        };
+
+        // Génère un texte lorem ipsum du nombre de mots demandé
+        const makeLoremIpsum = (count) => {
+            const base = (
+                'lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum'
+            ).split(' ');
+            const words = [];
+            for (let i = 0; i < count; i++) {
+                words.push(base[i % base.length]);
+            }
+            const sentence = words.join(' ');
+            return sentence.charAt(0).toUpperCase() + sentence.slice(1) + '…';
         };
 
         // Génère l'URL de preview pour Lorem Picsum
@@ -143,6 +164,47 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                 <BlockEdit {...props} />
                 <InspectorControls>
                     <PanelBody title={__('Configuration des Bindings', 'mon-plugin-bindings')}>
+                        {PLACEHOLDER_SUPPORTED.has(props.name) && (
+                            <>
+                                <TextControl
+                                    label={__('Placeholder natif', 'mon-plugin-bindings')}
+                                    value={attributes.placeholder || ''}
+                                    onChange={(val) => {
+                                        const next = typeof val === 'string' ? val : '';
+                                        if (next.trim() === '') {
+                                            setAttributes({ placeholder: undefined });
+                                        } else {
+                                            setAttributes({ placeholder: next });
+                                        }
+                                    }}
+                                    help={__('S’affiche dans l’éditeur lorsque le contenu est vide (aucun autre méta ajouté).', 'mon-plugin-bindings')}
+                                />
+
+                                <SelectControl
+                                    label={__('Générer un Lorem ipsum', 'mon-plugin-bindings')}
+                                    value={loremSelect}
+                                    options={[
+                                        { label: __('— Choisir —', 'mon-plugin-bindings'), value: '' },
+                                        { label: '3 mots', value: '3' },
+                                        { label: '5 mots', value: '5' },
+                                        { label: '8 mots', value: '8' },
+                                        { label: '20 mots', value: '20' },
+                                        { label: '150 mots', value: '150' },
+                                        { label: '300 mots', value: '300' },
+                                    ]}
+                                    onChange={(val) => {
+                                        setLoremSelect(val);
+                                        const n = parseInt(val, 10);
+                                        if (!isNaN(n) && n > 0) {
+                                            const txt = makeLoremIpsum(n);
+                                            setAttributes({ placeholder: txt });
+                                        }
+                                    }}
+                                    help={__('Sélectionner un nombre de mots pour remplir le placeholder avec du Lorem ipsum. La sélection n’est pas sauvegardée.', 'mon-plugin-bindings')}
+                                />
+                            </>
+                        )}
+
                         <p>Liez ce bloc à une source de données dynamique.</p>
 
                         <SelectControl
@@ -159,18 +221,19 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                                 setWordCount(8);
                             }}
                         />
-
+  
                         <TextControl
-                            label={__('Nom de la métadonnée (Name)', 'mon-plugin-bindings')}
+                            label={__('Nom du block', 'mon-plugin-bindings')}
                             value={bindingName}
                             onChange={setBindingName}
                             help={__("Ex: 'Intro', 'Titre de l'article'", 'mon-plugin-bindings')}
                         />
+  
+                        
 
                         {bindingSource === 'core/post-meta' &&
                             (META_FIELDS[props.name] || []).map((field) => (
                                 <TextControl
-                                    key={field.key}
                                     label={field.label}
                                     value={bindingKey[field.key] || ''}
                                     onChange={(val) =>

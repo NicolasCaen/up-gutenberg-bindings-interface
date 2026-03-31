@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2025-03-31
+- Ajout de la fonctionnalité de verrouillage de contenu (contentLock: contentOnly) pour les blocs Cover, Group, Columns et Column.
+- Nouveau panneau "Verrouillage" permettant d'empêcher la suppression ou le déplacement du bloc tout en autorisant la modification de son contenu.
+
 ## [1.1] - 2025-10-07
 - Remplace le libellé du champ par « Nom du block ».
 - Standardise les liaisons Post Meta sur `args.key` (au lieu d’utiliser `content/url/text/title`).

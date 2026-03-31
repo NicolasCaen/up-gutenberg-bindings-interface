@@ -6,12 +6,13 @@ import {
     TextControl,
     SelectControl,
     Button,
+    ToggleControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { useState, useEffect } from '@wordpress/element';
 
-const ALLOWED_BLOCKS = ['core/image', 'core/button', 'core/paragraph', 'core/heading'];
+const ALLOWED_BLOCKS = ['core/image', 'core/button', 'core/paragraph', 'core/heading', 'core/cover', 'core/group', 'core/columns', 'core/column'];
 
 const BINDING_SOURCES = [
     { label: 'Pattern Overrides', value: 'core/pattern-overrides' },
@@ -47,6 +48,9 @@ const BLOCK_BINDING_ATTRIBUTES = {
 // Liste des blocs pour lesquels un placeholder natif a du sens (RichText)
 const PLACEHOLDER_SUPPORTED = new Set(['core/paragraph', 'core/heading', 'core/button']);
 
+// Liste des blocs supportant le contentLock
+const CONTENT_LOCK_SUPPORTED = new Set(['core/cover', 'core/group', 'core/columns', 'core/column']);
+
 const withBindingControls = createHigherOrderComponent((BlockEdit) => {
     return (props) => {
         if (!ALLOWED_BLOCKS.includes(props.name)) return <BlockEdit {...props} />;
@@ -59,6 +63,7 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
         const [bindingKey, setBindingKey] = useState({});
         const [wordCount, setWordCount] = useState(8);
         const [loremSelect, setLoremSelect] = useState('');
+        const [contentLockEnabled, setContentLockEnabled] = useState(false);
 
         useEffect(() => {
             if (metadata?.name) setBindingName(metadata.name);
@@ -87,7 +92,12 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                     id: binding.args?.id || '',
                 });
             }
-        }, [metadata, props.name]);
+
+            // Charger l'état du templateLock
+            if (attributes.templateLock === 'contentOnly') {
+                setContentLockEnabled(true);
+            }
+        }, [metadata, props.name, attributes.templateLock]);
 
         const applyBinding = () => {
             const attr = BLOCK_BINDING_ATTRIBUTES[props.name] || 'content';
@@ -129,6 +139,17 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
             setWordCount(8);
         };
 
+        const toggleContentLock = (enabled) => {
+            setContentLockEnabled(enabled);
+            if (enabled) {
+                setAttributes({
+                    templateLock: 'contentOnly',
+                });
+            } else {
+                setAttributes({ templateLock: undefined });
+            }
+        };
+
         const isFormValid = () => {
             if (!bindingName) return false;
             if (bindingSource === 'core/post-meta') {
@@ -163,6 +184,16 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
             <>
                 <BlockEdit {...props} />
                 <InspectorControls>
+                    {CONTENT_LOCK_SUPPORTED.has(props.name) && (
+                        <PanelBody title={__('Verrouillage', 'mon-plugin-bindings')} initialOpen={false}>
+                            <ToggleControl
+                                label={__('Verrouiller le contenu uniquement', 'mon-plugin-bindings')}
+                                checked={contentLockEnabled}
+                                onChange={toggleContentLock}
+                                help={__('Empêche la suppression ou le déplacement du bloc, mais permet la modification de son contenu.', 'mon-plugin-bindings')}
+                            />
+                        </PanelBody>
+                    )}
                     <PanelBody title={__('Configuration des Bindings', 'mon-plugin-bindings')}>
                         {PLACEHOLDER_SUPPORTED.has(props.name) && (
                             <>

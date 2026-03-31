@@ -96,6 +96,8 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
             // Charger l'état du templateLock
             if (attributes.templateLock === 'contentOnly') {
                 setContentLockEnabled(true);
+            } else {
+                setContentLockEnabled(false);
             }
         }, [metadata, props.name, attributes.templateLock]);
 
@@ -142,9 +144,7 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
         const toggleContentLock = (enabled) => {
             setContentLockEnabled(enabled);
             if (enabled) {
-                setAttributes({
-                    templateLock: 'contentOnly',
-                });
+                setAttributes({ templateLock: 'contentOnly' });
             } else {
                 setAttributes({ templateLock: undefined });
             }
@@ -187,6 +187,7 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                     {CONTENT_LOCK_SUPPORTED.has(props.name) && (
                         <PanelBody title={__('Verrouillage', 'mon-plugin-bindings')} initialOpen={false}>
                             <ToggleControl
+                                __nextHasNoMarginBottom
                                 label={__('Verrouiller le contenu uniquement', 'mon-plugin-bindings')}
                                 checked={contentLockEnabled}
                                 onChange={toggleContentLock}
@@ -198,6 +199,8 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                         {PLACEHOLDER_SUPPORTED.has(props.name) && (
                             <>
                                 <TextControl
+                                    __nextHasNoMarginBottom
+                                    __next40pxDefaultSize
                                     label={__('Placeholder natif', 'mon-plugin-bindings')}
                                     value={attributes.placeholder || ''}
                                     onChange={(val) => {
@@ -208,10 +211,12 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                                             setAttributes({ placeholder: next });
                                         }
                                     }}
-                                    help={__('S’affiche dans l’éditeur lorsque le contenu est vide (aucun autre méta ajouté).', 'mon-plugin-bindings')}
+                                    help={__('S\'affiche dans l\'éditeur lorsque le contenu est vide (aucun autre méta ajouté).', 'mon-plugin-bindings')}
                                 />
 
                                 <SelectControl
+                                    __nextHasNoMarginBottom
+                                    __next40pxDefaultSize
                                     label={__('Générer un Lorem ipsum', 'mon-plugin-bindings')}
                                     value={loremSelect}
                                     options={[
@@ -231,7 +236,7 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                                             setAttributes({ placeholder: txt });
                                         }
                                     }}
-                                    help={__('Sélectionner un nombre de mots pour remplir le placeholder avec du Lorem ipsum. La sélection n’est pas sauvegardée.', 'mon-plugin-bindings')}
+                                    help={__('Sélectionner un nombre de mots pour remplir le placeholder avec du Lorem ipsum. La sélection n\'est pas sauvegardée.', 'mon-plugin-bindings')}
                                 />
                             </>
                         )}
@@ -239,6 +244,8 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                         <p>Liez ce bloc à une source de données dynamique.</p>
 
                         <SelectControl
+                            __nextHasNoMarginBottom
+                            __next40pxDefaultSize
                             label={__('Source des données', 'mon-plugin-bindings')}
                             value={bindingSource}
                             options={BINDING_SOURCES}
@@ -254,6 +261,8 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                         />
   
                         <TextControl
+                            __nextHasNoMarginBottom
+                            __next40pxDefaultSize
                             label={__('Nom du block', 'mon-plugin-bindings')}
                             value={bindingName}
                             onChange={setBindingName}
@@ -265,6 +274,8 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                         {bindingSource === 'core/post-meta' &&
                             (META_FIELDS[props.name] || []).map((field) => (
                                 <TextControl
+                                    __nextHasNoMarginBottom
+                                    __next40pxDefaultSize
                                     label={field.label}
                                     value={bindingKey[field.key] || ''}
                                     onChange={(val) =>
@@ -278,6 +289,8 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
 
                         {bindingSource === 'up/lorem-ipsum' && (
                             <TextControl
+                                __nextHasNoMarginBottom
+                                __next40pxDefaultSize
                                 label={__('Nombre de mots', 'mon-plugin-bindings')}
                                 type="number"
                                 min="1"
@@ -298,6 +311,8 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                         {bindingSource === 'up/lorem-picsum' && (
                             <>
                                 <TextControl
+                                    __nextHasNoMarginBottom
+                                    __next40pxDefaultSize
                                     label={__('Largeur (px)', 'mon-plugin-bindings')}
                                     type="number"
                                     value={bindingKey.width}
@@ -309,6 +324,8 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                                     }
                                 />
                                 <TextControl
+                                    __nextHasNoMarginBottom
+                                    __next40pxDefaultSize
                                     label={__('Hauteur (px)', 'mon-plugin-bindings')}
                                     type="number"
                                     value={bindingKey.height}
@@ -320,6 +337,8 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                                     }
                                 />
                                 <TextControl
+                                    __nextHasNoMarginBottom
+                                    __next40pxDefaultSize
                                     label={__('ID (Picsum)', 'mon-plugin-bindings')}
                                     type="number"
                                     value={bindingKey.id}
@@ -329,7 +348,7 @@ const withBindingControls = createHigherOrderComponent((BlockEdit) => {
                                             id: val === '' ? '' : parseInt(val, 10) || '',
                                         }))
                                     }
-                                    help={__('Changer l’ID pour obtenir des images différentes.', 'mon-plugin-bindings')}
+                                    help={__('Changer l\'ID pour obtenir des images différentes.', 'mon-plugin-bindings')}
                                 />
 
                                 {getPicsumUrl() && (

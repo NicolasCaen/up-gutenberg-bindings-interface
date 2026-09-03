@@ -11,6 +11,7 @@
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "@wordpress/browserslist-config": "^6.54.0",
         "@wordpress/scripts": "^27.6.0"
     },
     "repository": {
